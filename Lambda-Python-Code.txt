@@ -1,0 +1,56 @@
+import json
+import csv
+import boto3
+
+def lambda_handler(event, context):
+    region = 'us-east-1'
+    record_list = []
+	
+    try:
+        s3=boto3.client('s3')
+        dynamodb=boto3.client('dynamodb',region_name=region)
+        bucket=event['Records'][0]['s3']['bucket']['name']
+        key=event['Records'][0]['s3']['object']['key']
+		
+        print('Bucket:', bucket,'Key:', key)
+        csv_file=s3.get_object(Bucket=bucket,Key=key)
+        record_list=csv_file['Body'].read().decode('utf-8').split('\n')
+        csv_reader=csv.reader(record_list,delimiter=',',quotechar='"')
+        firstrecord=True
+		
+        for row in csv_reader:
+           if(firstrecord):
+               firstrecord=False
+               continue
+           id=row[0]
+           case_number=row[1]
+           date=row[2]
+           block=row[3]
+           iucr_code=row[4]
+           location_desc=row[5]
+           arrest=row[6]
+           domestic=row[7]
+           beat_num=row[8]
+           district_code=row[9]
+           ward_no=row[10]
+           community_code=row[11]
+           fbi_code=row[12]
+           x_coordinate=row[13]
+           y_coordinate=row[14]
+           year=row[15]
+           date_of_update=row[16]
+           latitude=row[17]
+           longitude=row[18]
+           location=row[19]
+
+			  
+           print('id:',id)
+			  
+           add_to_db=dynamodb.put_item(TableName='Chicagocrimes',Item={'id':{'N':str(id)},'case_number':{'S':str(case_number)},'date':{'S':str(date)},'block':{'S':str(block)},'iucr_code':{'S':str(iucr_code)},'location_desc':{'S':str(location_desc)},'arrest':{'S':str(arrest)},'domestic':{'S':str(domestic)},'beat_num':{'N':str(beat_num)},'district_code':{'N':str(district_code)},'ward_no':{'N':str(ward_no)},'community_code':{'N':str(community_code)},'fbi_code':{'S':str(fbi_code)},'x_coordinate':{'S':str(x_coordinate)},'y_coordinate':{'S':str(y_coordinate)},'year':{'N':str(year)},'date_of_update':{'S':str(date_of_update)},'latitude':{'S':str(latitude)},'longitude':{'S':str(longitude)},'location':{'S':str(location)}})
+    except Exception as e:
+        print(str(e))
+   
+    return {
+        'statusCode': 200,
+        'body': json.dumps('csv to dynamdb success')
+    }
