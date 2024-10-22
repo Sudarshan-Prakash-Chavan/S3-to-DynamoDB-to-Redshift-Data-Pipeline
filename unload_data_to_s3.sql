@@ -1,0 +1,4 @@
+UNLOAD ('SELECT * FROM crimedata WHERE district_code = 25') 
+TO 's3://YOUR_BUCKET_NAME' 
+IAM_ROLE 'arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_ROLE_NAME' 
+PARALLEL OFF;
